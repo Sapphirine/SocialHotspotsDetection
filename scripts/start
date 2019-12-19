@@ -1,0 +1,20 @@
+#!/bin/bash
+
+export PATH=/Users/amit.patel/anaconda3/envs/py3/bin:/Users/amit.patel/anaconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.7/bin:/usr/local/opt/llvm/bin:/Users/amit.patel/.opam/default/bin:/Users/amit.patel/Downloads/google-cloud-sdk/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/munki:/Users/amit.patel/Library/Android/sdk/platform-tools:/Users/amit.patel/Library/Python/3.5/bin
+export GOOGLE_APPLICATION_CREDENTIALS=/Users/amit.patel/Documents/CVN/EECS_E6893/auth/ColumbiaE6893-e4539ff8de19.json
+
+cd "$(dirname "$0")"
+rmdir -r ../out
+mkdir ../out
+
+echo "Starting Social Hotspots Generation..."
+./stop
+
+echo "Starting Twitter Http Client..."
+nohup ../twitterHttpClient.py > ../out/twitterHttpClient.out &
+
+echo "Starting Spark Streaming Client..."
+nohup ../tweetIngestion.py > ../out/tweetIngestion.out &
+
+echo "Installing Cluster Generation Cron..."
+crontab hotspots_crontab

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "Stopping Social Hotspots Generation..."
+killall python twitterHttpClient.py
+killall python tweetIngestion.py
+crontab -r
