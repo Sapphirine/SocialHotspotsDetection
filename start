@@ -4,17 +4,17 @@ export PATH=/Users/amit.patel/anaconda3/envs/py3/bin:/Users/amit.patel/anaconda3
 export GOOGLE_APPLICATION_CREDENTIALS=/Users/amit.patel/Documents/CVN/EECS_E6893/auth/ColumbiaE6893-e4539ff8de19.json
 
 cd "$(dirname "$0")"
-rmdir -r ../out
-mkdir ../out
+rmdir -r ./out
+mkdir ./out
 
 echo "Starting Social Hotspots Generation..."
 ./stop
 
 echo "Starting Twitter Http Client..."
-nohup ../twitterHttpClient.py > ../out/twitterHttpClient.out &
+nohup ./twitterHttpClient.py > ./out/twitterHttpClient.out &
 
 echo "Starting Spark Streaming Client..."
-nohup ../tweetIngestion.py > ../out/tweetIngestion.out &
+nohup ./tweetIngestion.py > ./out/tweetIngestion.out &
 
 echo "Installing Cluster Generation Cron..."
 crontab hotspots_crontab

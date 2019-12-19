@@ -13,12 +13,9 @@ from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy.streaming import StreamListener
 import socket
+import auth.globals as globals
+globals.init()
 
-# credentials
-ACCESS_TOKEN = '114718581-BKgrfcxaTWxbxBzK6ECcoHjnCuTaMfUOJXDT9Y3X'     # your access token
-ACCESS_SECRET = 'lcmjmZpdNTRMDwRr4lh2XmTMFzAuTiHk26uhfprQcWzBe'         # your access token secret
-CONSUMER_KEY = 'qApUFBNnJEEHunllrBambhvKM'                              # your API key
-CONSUMER_SECRET = 'ncgp243EMzcsSdjouJiN95hSz0qGq5i4rZjk4VzmuD2AAVKyYM'  # your API secret key
 
 # location bounding boxes to track
 LOCATION_NYC = [-74, 40, -73, 41]
@@ -79,8 +76,8 @@ class TwitterClient:
         """
         send data to socket
         """
-        auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-        auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
+        auth = OAuthHandler(globals.TWITTER_CONSUMER_KEY, globals.TWITTER_CONSUMER_SECRET)
+        auth.set_access_token(globals.TWITTER_ACCESS_TOKEN, globals.TWITTER_ACCESS_SECRET)
         twitter_stream = Stream(auth, TweetsListener(socket_connection))
         twitter_stream.filter(locations=self.locations, languages=['en'])
 
