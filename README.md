@@ -12,7 +12,8 @@ and ultimately be able to visualize the results via a web application in the bro
 
 ## Instructions
 
-- `./categoryClassifierCommand train` - The classifier joblib file was too large to upload to GitHub so you must first train the classifier yourself
+- `./categoryClassifierCommand train` - The classifier joblib file was too large to upload to GitHub so you must first
+train the classifier before starting the system
 
 - `./start` - Run a bash script to start the system. This will connect to the Twitter API, ingest and persist relevant tweets,
 and generate social hotspots.
