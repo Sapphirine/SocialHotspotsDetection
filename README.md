@@ -12,10 +12,9 @@ and ultimately be able to visualize the results via a web application in the bro
 
 ## Instructions
 
-- Run the start script to start the system. This will connect to the Twitter API, ingest and persist relevant tweets,
+- `./start` Run the start script to start the system. This will connect to the Twitter API, ingest and persist relevant tweets,
 and generate social hotspots.
 
-`./start`
 
 - Run the stop script to stop the system.
 
