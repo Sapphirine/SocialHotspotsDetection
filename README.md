@@ -16,7 +16,8 @@ and ultimately be able to visualize the results via a web application in the bro
 train the classifier before starting the system
 
 - `./start` - Run a bash script to start the system. This will connect to the Twitter API, ingest and persist relevant tweets,
-and generate social hotspots.
+and generate social hotspots. Note, you may have to manually open crontab and save if your system did not install it
+correctly from the start script.
 
 - `./stop` - Run a bash script script to stop the system.
 
@@ -25,4 +26,5 @@ and generate social hotspots.
 - `http://localhost:8000/hotspots` - on a web browser to connect to the web server and begin visualizing the tweet heatmap,
 hotspot map markers via the Google Maps API.
 
-- Sensitive code such as api keys in the `auth` folder have not been uploaded to the repository.
+- Sensitive code such as api keys in the `auth` folder and other miscellaneous files such as generated code
+have not been uploaded to the repository.
