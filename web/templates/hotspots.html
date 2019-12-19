@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Social Hotspots</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <script src="https://maps.googleapis.com/maps/api/js?libraries=visualization&key=AIzaSyAFd9pOIsWA-n3bSw4gGIavm0Y0eqr3ckA" async defer></script>
+
+    <script>
+      let clientId = '843981023187-ov97movuod2kkqo11ucbia1lu5tslm8r.apps.googleusercontent.com';
+      let scopes = 'https://www.googleapis.com/auth/bigquery';
+
+      // Check if the user is authorized.
+      function authorize(event) {
+        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, handleAuthResult);
+        return false;
+      }
+
+      // If authorized, load BigQuery API
+      function handleAuthResult(authResult) {
+        if (authResult && !authResult.error) {
+          loadApi();
+          return;
+        }
+        console.error('Not authorized.')
+      }
+
+      // Load BigQuery client API
+      function loadApi(){
+        gapi.client.load('bigquery', 'v2').then(() => initMap());
+      }
+    </script>
+
+    <script src='https://apis.google.com/js/client.js'></script>
+
+    <script type='text/javascript'>
+        gapi.load('client:auth', authorize);
+    </script>
+
+    {% load static %}
+
+    <script>
+      var map;
+
+      let projectId = 'intrepid-broker-253108';
+      let datasetId = 'bigdata_project';
+      let tableName = 'clusters';
+      let runStartTime = '2019-12-13 13:08:00';
+      // AND TIMESTAMP(created_at) >= PARSE_TIMESTAMP('%Y-%m-%d %H:%M:%S', '" + runStartTime + "', 'America/Los_Angeles')\
+
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: { lat: 39.255558, lng: -99.310427 },
+          zoom: 5
+        });
+
+        loadData();
+      }
+
+      let hasSetMapCenter = false;
+
+      function loadData() {
+        loadTweets();
+        loadClusters();
+      }
+
+      function loadTweets() {
+        console.log("Load Tweets...");
+        let sql = "SELECT coord_lat, coord_long\
+        FROM `intrepid-broker-253108.bigdata_project.tweets`\
+        WHERE TIMESTAMP(created_at) >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(),INTERVAL 45 MINUTE)\
+        ORDER BY created_at DESC\
+        LIMIT 50000;";
+        console.log(sql);
+        let request = gapi.client.bigquery.jobs.query({
+            'query': sql,
+            'timeoutMs': 30000,
+            'datasetId': datasetId,
+            'projectId': projectId,
+            'useLegacySql':false
+        });
+        request.execute(response => {
+          console.log(response)
+          if (response == null || response.result == null) {
+            console.log("Error fetching Tweets!");
+            return;
+          }
+          let rows = response.result.rows;
+          renderTweets(rows);
+        });
+      }
+
+      let heatmap;
+
+      function renderTweets(rows) {
+        if (rows == null || rows.length <= 0) {
+          console.log("No Tweets to Render.");
+        } else {
+          console.log("Rendering " + String(rows.length) + " Tweets...");
+        }
+        let heatmapData = [];
+        if (heatmap != null) {
+          heatmap.setMap(null);
+        }
+        if (rows == null || rows.length <= 0) {
+          return;
+        }
+        for (let i = 0; i < rows.length; i++) {
+          let f = rows[i].f;
+          let lat = parseFloat(f[0].v);
+          let lng = parseFloat(f[1].v);
+          let heatmapPoint = new google.maps.LatLng(lat, lng);
+          heatmapData.push(heatmapPoint);
+        }
+
+        heatmap = new google.maps.visualization.HeatmapLayer({
+          data: heatmapData,
+          map: map
+        });
+        heatmap.set('radius', 20);
+      }
+
+      function loadClusters(){
+        console.log("Load Clusters...");
+        let sql = "select coord_lat, coord_long, num_tweets, tweets, corpus, sentiment, category, FORMAT_DATETIME(\"%D %T\", DATETIME(TIMESTAMP(db_insert_time), \"America/Los_Angeles\"))\
+         from `bigdata_project.clusters`\
+         where db_insert_time IN (\
+            select distinct db_insert_time from `bigdata_project.clusters`\
+            order by db_insert_time desc limit 1\
+         )\
+         order by db_insert_time\
+         desc limit 100";
+        let request = gapi.client.bigquery.jobs.query({
+            'query': sql,
+            'timeoutMs': 30000,
+            'datasetId': datasetId,
+            'projectId': projectId,
+            'useLegacySql':false
+        });
+        request.execute(response => {
+          console.log(response)
+          if (response == null || response.result == null) {
+            console.log("Error fetching Hotspots!");
+            return;
+          }
+          let rows = response.result.rows;
+          renderClusters(rows);
+          /*if (!hasSetMapCenter && rows != null && rows.length > 0) {
+            map.setCenter(getClustersCentroid(rows));
+            hasSetMapCenter = true;
+          }*/
+        });
+      }
+
+      function getClustersCentroid(rows) {
+         let centroidLat = 0.0;
+         let centroidLng = 0.0;
+         for (let i = 0; i < rows.length; i++) {
+           centroidLat += parseFloat((rows[i].f)[0].v);
+           centroidLng += parseFloat((rows[i].f)[1].v);
+         }
+         let res = { lat: centroidLat / rows.length, lng: centroidLng / rows.length };
+         console.log(res);
+         return res;
+      }
+
+      var clusterMarkers = [];
+      var infoWindow;
+
+      function renderClusters(rows) {
+        if (rows == null || rows.length <= 0) {
+          console.log("No Clusters to Render.");
+        } else {
+          console.log("Rendering " + String(rows.length) + " Clusters ...");
+        }
+        // clear existing markers if any
+        if (clusterMarkers.length > 0) {
+          for (let i = 0; i < clusterMarkers.length; i++) {
+            clusterMarkers[i].setMap(null);
+          }
+          clusterMarkers = [];
+        }
+        if (infoWindow != null) {
+          infoWindow.close();
+        }
+
+        if (rows == null || rows.length <= 0) {
+          return;
+        }
+        for (let i = 0; i < rows.length; i++) {
+            let f = rows[i].f;
+            let lat = parseFloat(f[0].v);
+            let lng = parseFloat(f[1].v);
+            let marker = new google.maps.Marker({
+              map: map,
+              draggable: false,
+              position: {lat: lat, lng: lng}
+            });
+            clusterMarkers.push(marker);
+
+            if (infoWindow == null) {
+               infoWindow = new google.maps.InfoWindow();
+            }
+            makeInfoWindowEvent(map, getClusterPopupString(f), marker);
+        }
+      }
+
+      function makeInfoWindowEvent(map, contentString, marker) {
+        google.maps.event.addListener(marker, 'click', function() {
+          infoWindow.setContent(contentString);
+          infoWindow.open(map, marker);
+        });
+      }
+
+      function getClusterPopupString(clusterData) {
+        let sentimentFontColor;
+        let sentiment = clusterData[5].v;
+        if (sentiment == "Positive") {
+            sentimentFontColor = "green";
+        } else if (sentiment == "Negative") {
+            sentimentFontColor = "red";
+        } else {
+          sentimentFontColor = "gray";
+        }
+        let numTweets = clusterData[2].v;
+        let category = clusterData[6].v;
+        let creationTime = clusterData[7].v;
+        return "Creation: " + creationTime +
+          "<br>Num Tweets: " + clusterData[2].v +
+          "<br>Sentiment: <font color=\"" + sentimentFontColor + "\">" + sentiment + "</font>" +
+          (category != null && category.length > 0 ? "<br>Category: <font color=\"#DBA400\">" + category + "</font>" : "") +
+          "<br><br>Content:<br>" + clusterData[4].v.replace(/(?:\r\n|\r|\n)/g, '<br>');
+      }
+
+      setInterval(loadData, 60000);
+    </script>
+
+  </body>
+</html>
