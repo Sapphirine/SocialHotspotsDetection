@@ -1,0 +1,9 @@
+auth
+*.joblib
+*.pkl
+__pycache__
+out
+scripts/~/
+scratch
+.idea
+~/
