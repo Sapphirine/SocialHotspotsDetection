@@ -12,14 +12,14 @@ and ultimately be able to visualize the results via a web application in the bro
 
 ## Instructions
 
-- `./start` Run the start script to start the system. This will connect to the Twitter API, ingest and persist relevant tweets,
+- `./start` Run a bash script to start the system. This will connect to the Twitter API, ingest and persist relevant tweets,
 and generate social hotspots.
 
-- `./stop` Run the stop script to stop the system.
+- `./stop` Run a bash script script to stop the system.
 
-- `python manage.py runwebserver` to start the web server in order to serve the visualization web application
+- `./manage.py runserver` Start the web server in order to serve the visualization web application.
 
-- `http://localhost:8000` on a web browser to connect to the web server and begin visualizing the tweet heatmap,
+- `http://localhost:8000/hotspots` on a web browser to connect to the web server and begin visualizing the tweet heatmap,
 hotspot map markers via the Google Maps API.
 
 - Sensitive code such as api keys in the `auth` folder have not been uploaded to the repository.
