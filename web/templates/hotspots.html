@@ -5,12 +5,9 @@
     <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8">
     <style>
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
       #map {
         height: 100%;
       }
-      /* Optional: Makes the sample page fill the window. */
       html, body {
         height: 100%;
         margin: 0;
@@ -63,7 +60,6 @@
       let datasetId = 'bigdata_project';
       let tableName = 'clusters';
       let runStartTime = '2019-12-13 13:08:00';
-      // AND TIMESTAMP(created_at) >= PARSE_TIMESTAMP('%Y-%m-%d %H:%M:%S', '" + runStartTime + "', 'America/Los_Angeles')\
 
       function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
@@ -162,10 +158,6 @@
           }
           let rows = response.result.rows;
           renderClusters(rows);
-          /*if (!hasSetMapCenter && rows != null && rows.length > 0) {
-            map.setCenter(getClustersCentroid(rows));
-            hasSetMapCenter = true;
-          }*/
         });
       }
 
