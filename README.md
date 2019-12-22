@@ -42,6 +42,8 @@ Lastly, you will need to have your GCP credentials whitelisted in order to be ab
 
 Excecution
 
+cd to the root installation directory where the start/stop scripts reside.
+
 - `./categoryClassifierCommand train` - The classifier joblib file was too large to upload to GitHub so you must first
 train the classifier before starting the system. data/uci-news-aggregator.csv file is used as the input file.
 
